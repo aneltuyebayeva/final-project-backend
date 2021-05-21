@@ -1,8 +1,8 @@
 """create-products
 
-Revision ID: ae6230cbe2c8
-Revises: 608edca83238
-Create Date: 2021-05-21 15:52:15.259144
+Revision ID: 35c54188d07e
+Revises: 1a1555ed307d
+Create Date: 2021-05-21 16:39:43.950182
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'ae6230cbe2c8'
-down_revision = '608edca83238'
+revision = '35c54188d07e'
+down_revision = '1a1555ed307d'
 branch_labels = None
 depends_on = None
 
