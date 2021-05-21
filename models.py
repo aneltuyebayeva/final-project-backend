@@ -7,12 +7,12 @@ class User(db.Model):
     name = db.Column(db.String, nullable=False)
     email = db.Column(db.String, nullable=False, unique=True)
     password = db.Column(db.String)
-def to_json(self):
-    return {
-      "id": self.id,
-      "name": self.name,
-      "email": self.email
-    }
+    def to_json(self):
+      return {
+        "id": self.id,
+        "name": self.name,
+        "email": self.email
+      }
 
 class Order(db.Model):
     __tablename__ = 'orders'
@@ -28,7 +28,6 @@ class Product(db.Model):
     description = db.Column(db.String)
     image = db.Column(db.String)
     price = db.Column(db.String)
-
 
 class Cart(db.Model):
     __tablename__ = 'carts'
