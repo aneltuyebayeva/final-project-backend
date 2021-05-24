@@ -147,6 +147,46 @@ def add_to_cart(id):
   }
 app.route('/carts', methods=["POST"])(add_to_cart)
 
+def create_order():
+  decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
+  print('decrypted id here', decrypted_id)
+  user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
+  order = models.Order(
+    address = request.json["address"],
+    credit_card = request.json["credit_card"]
+  )
+  user.orders.append(order)
+  models.db.session.add(order)
+  models.db.session.add(user)
+  models.db.session.commit()
+  return {
+    "user": user.to_json(),
+    "order": order.to_json()
+  }
+app.route('/orders', methods=["POST"])(create_order)
+
+def all_orders():
+    decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
+    user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
+    orders = user.orders
+    return {
+        "user": user.to_json(),
+        "orders": [o.to_json() for o in orders]
+    }
+app.route('/orders', methods=["GET"])(all_orders)
+
+def single_order(id):
+    decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
+    user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
+    order = models.Order.query.filter_by(id = id).first()
+    products = order.products 
+    return {
+      "user": user.to_json(),
+      "order": order.to_json(),
+      "products": [p.to_json() for p in products]
+    }
+app.route('/orders/<int:id>', methods=["GET"])(single_order)
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
