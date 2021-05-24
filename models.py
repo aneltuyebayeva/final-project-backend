@@ -7,6 +7,7 @@ class User(db.Model):
     name = db.Column(db.String, nullable=False)
     email = db.Column(db.String, nullable=False, unique=True)
     password = db.Column(db.String)
+    carts = db.relationship('Cart')
     def to_json(self):
       return {
         "id": self.id,
@@ -28,12 +29,29 @@ class Product(db.Model):
     description = db.Column(db.String)
     image = db.Column(db.String)
     price = db.Column(db.String)
+    carts = db.relationship('Cart')
+    def to_json(self):
+      return {
+        "id": self.id,
+        "name": self.name,
+        "description": self.description,
+        "image": self.image,
+        "price": self.price
+      }
 
 class Cart(db.Model):
     __tablename__ = 'carts'
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    products = db.relationship('Product')
+    users = db.relationship('User')
+    def to_json(self):
+      return {
+        "id": self.id,
+        "product_id": self.product_id,
+        "user_id": self.user_id
+      }
 
 class Product_Order(db.Model):
     __tablename__ = 'product_orders'
