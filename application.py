@@ -144,6 +144,26 @@ def add_to_cart():
   }
 app.route('/carts', methods=["POST"])(add_to_cart)
 
+def all_cart_products():
+    decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
+    user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
+    products = user.products
+    return {
+      "user": user.to_json(),
+      "products": [p.to_json() for p in products]
+    }
+app.route('/carts', methods=["GET"])(all_cart_products)
+
+def remove_from_cart(id):
+  decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
+  user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
+  product = models.Product.query.filter_by(id = id).first()
+  user.products.remove(product)
+  models.db.session.add(user)
+  models.db.session.commit()
+  return 'cart is empty'
+app.route('/carts/<int:id>', methods=["DELETE"])(remove_from_cart)
+
 def create_order():
   decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
   print('decrypted id here', decrypted_id)

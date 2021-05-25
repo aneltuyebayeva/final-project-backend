@@ -10,6 +10,7 @@ class User(db.Model):
     password = db.Column(db.String)
     products = db.relationship('Product', secondary='carts', backref='users')
     orders = db.relationship('Order')
+    carts = db.relationship('Cart')
     def to_json(self):
       return {
         "id": self.id,
