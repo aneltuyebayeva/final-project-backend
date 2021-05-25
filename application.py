@@ -130,18 +130,15 @@ def single_product(id):
   return { "product": product.to_json()}
 app.route('/products/<int:id>', methods=["GET"])(single_product)
 
-def add_to_cart(id):
+def add_to_cart():
   decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
   user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
   product = models.Product.query.filter_by(id = request.json["product_id"]).first()
-  cart = models.Cart(id = id)
-  cart.users.append(user)
-  cart.products.append(product)
+  user.products.append(product)
   models.db.session.add(user)
   models.db.session.add(product)
   models.db.session.commit()
   return {
-    "cart": cart.to_json(),
     "user": user.to_json(),
     "product": product.to_json()
   }

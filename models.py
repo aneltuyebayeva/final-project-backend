@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import backref
 db = SQLAlchemy()
 
 class User(db.Model):
@@ -7,7 +8,7 @@ class User(db.Model):
     name = db.Column(db.String, nullable=False)
     email = db.Column(db.String, nullable=False, unique=True)
     password = db.Column(db.String)
-    carts = db.relationship('Cart')
+    products = db.relationship('Product', secondary='carts', backref='users')
     orders = db.relationship('Order')
     def to_json(self):
       return {
