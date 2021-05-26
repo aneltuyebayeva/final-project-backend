@@ -166,14 +166,13 @@ app.route('/carts/<int:id>', methods=["DELETE"])(remove_from_cart)
 
 def create_order():
   decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
-  print('decrypted id here', decrypted_id)
   user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
   order = models.Order(
     address = request.json["address"],
     credit_card = request.json["credit_card"]
   )
-  user.orders.append(order)
   models.db.session.add(order)
+  user.orders.append(order)
   models.db.session.add(user)
   models.db.session.commit()
   return {
@@ -181,6 +180,23 @@ def create_order():
     "order": order.to_json()
   }
 app.route('/orders', methods=["POST"])(create_order)
+
+def create_order_products():
+  decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
+  user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
+  product = models.Product.query.filter_by(id = request.json["product_id"]).first()
+  order = models.Order.query.filter_by(id = request.json["order_id"]).first()
+  order.products.append(product)
+  models.db.session.add(user)
+  models.db.session.add(product)
+  models.db.session.add(order)
+  models.db.session.commit()
+  return {
+    "user": user.to_json(),
+    "product": product.to_json(),
+    "order": order.to_json()
+  }
+app.route('/createorder', methods=["POST"])(create_order_products)
 
 def all_orders():
     decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])

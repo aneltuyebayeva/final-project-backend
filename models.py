@@ -70,3 +70,9 @@ class Product_Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'))
     order_id = db.Column(db.Integer, db.ForeignKey('orders.id'))
+    def to_json(self):
+      return {
+        "id": self.id,
+        "product_id": self.product_id,
+        "order_id": self.order_id
+      }
