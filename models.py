@@ -25,6 +25,7 @@ class Order(db.Model):
     address = db.Column(db.String)
     credit_card = db.Column(db.String)
     users = db.relationship('User')
+    product_order = db.relationship('Product_Order')
     def to_json(self):
       return {
         "id": self.id,
@@ -42,6 +43,7 @@ class Product(db.Model):
     price = db.Column(db.String)
     carts = db.relationship('Cart')
     orders = db.relationship('Order', secondary='product_orders', backref='products') 
+    product_order = db.relationship('Product_Order')
     def to_json(self):
       return {
         "id": self.id,
@@ -49,6 +51,16 @@ class Product(db.Model):
         "description": self.description,
         "image": self.image,
         "price": self.price
+      }
+    def to_order_json(self, order_id):
+        product_order = Product_Order.query.filter(Product_Order.product_id == self.id, Product_Order.order_id == order_id).first()
+        return {
+        "id": self.id,
+        "name": self.name,
+        "description": self.description,
+        "image": self.image,
+        "price": self.price,
+        "quantity": product_order.quantity
       }
 
 class Cart(db.Model):

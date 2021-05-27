@@ -55,9 +55,11 @@ app.route('/users/login', methods = ["POST"])(login_user)
 def verify_user():
   decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
   user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
+  products = user.products
   if not user:
     return { "message": "User not found" }, 404
-  return { "user": user.to_json() }
+  return { "user": user.to_json(),
+  "products": [p.to_json() for p in products]}
 app.route('/users/verify', methods=["GET"])(verify_user)
 
 def seed():
@@ -169,14 +171,30 @@ def create_order():
   decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
   user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
   order = models.Order(
-    address = request.json["address"],
-    credit_card = request.json["credit_card"]
+    address = request.json["order"]["address"],
+    credit_card = request.json["order"]["credit_card"]
   )
-  order.products = user.products
+
+  # order_products = []
+  # user.products
+  # for product in user.products:
+  print('request', request.json["userProducts"])
+  # order.products = user.products
   user.products = []
   models.db.session.add(order)
   user.orders.append(order)
   models.db.session.add(user)
+  models.db.session.commit()
+  user_product = request.json["userProducts"]
+  user_product_list = []
+  for product in user_product:
+    user_product_list.append(    
+      models.Product_Order(
+      product_id = product["id"],
+      order_id = order.id,
+      quantity = int(product["quantity"])
+    ))
+  models.db.session.add_all(user_product_list)
   models.db.session.commit()
   return {
     "user": user.to_json(),
@@ -203,7 +221,7 @@ def single_order(id):
     return {
       "user": user.to_json(),
       "order": order.to_json(),
-      "products": [p.to_json() for p in products]
+      "products": [p.to_order_json(order.id) for p in products]
     }
 app.route('/orders/<int:id>', methods=["GET"])(single_order)
 
