@@ -147,6 +147,7 @@ app.route('/carts', methods=["POST"])(add_to_cart)
 def all_cart_products():
     decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
     user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
+    print('carts association', user.carts)
     products = user.products
     return {
       "user": user.to_json(),
@@ -179,7 +180,8 @@ def create_order():
   models.db.session.commit()
   return {
     "user": user.to_json(),
-    "order": order.to_json()
+    "order": order.to_json(),
+    "products": [p.to_json() for p in order.products]
   }
 app.route('/orders', methods=["POST"])(create_order)
 
