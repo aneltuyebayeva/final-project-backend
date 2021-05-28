@@ -174,12 +174,6 @@ def create_order():
     address = request.json["order"]["address"],
     credit_card = request.json["order"]["credit_card"]
   )
-
-  # order_products = []
-  # user.products
-  # for product in user.products:
-  print('request', request.json["userProducts"])
-  # order.products = user.products
   user.products = []
   models.db.session.add(order)
   user.orders.append(order)
