@@ -45,7 +45,7 @@ def login_user():
   if not user:
     return { "message": "User not found" }, 404
   if bcrypt.check_password_hash(user.password, request.json["password"]):
-    encrypted_id = jwt.encode({"user_id": user.id}, os.environ.get('JWT_SECRET'), algorithm="HS256")
+    encrypted_id = jwt.encode({"id": user.id}, os.environ.get('JWT_SECRET'), algorithm="HS256")
     return { "user_id": encrypted_id, "user": user.to_json() }
   else:
     return { "message": "Invalid password" }, 401
@@ -54,7 +54,8 @@ app.route('/users/login', methods = ["POST"])(login_user)
 
 def verify_user():
   decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
-  user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
+  print('decrypted id', decrypted_id)
+  user = models.User.query.filter_by(id=decrypted_id['id']).first()
   products = user.products
   if not user:
     return { "message": "User not found" }, 404
@@ -134,7 +135,7 @@ app.route('/products/<int:id>', methods=["GET"])(single_product)
 
 def add_to_cart():
   decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
-  user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
+  user = models.User.query.filter_by(id=decrypted_id['id']).first()
   product = models.Product.query.filter_by(id = request.json["product_id"]).first()
   user.products.append(product)
   models.db.session.add(user)
@@ -148,7 +149,7 @@ app.route('/carts', methods=["POST"])(add_to_cart)
 
 def all_cart_products():
     decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
-    user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
+    user = models.User.query.filter_by(id=decrypted_id['id']).first()
     print('carts association', user.carts)
     products = user.products
     return {
@@ -159,7 +160,7 @@ app.route('/carts', methods=["GET"])(all_cart_products)
 
 def remove_from_cart(id):
   decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
-  user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
+  user = models.User.query.filter_by(id=decrypted_id['id']).first()
   product = models.Product.query.filter_by(id = id).first()
   user.products.remove(product)
   models.db.session.add(user)
@@ -169,7 +170,7 @@ app.route('/carts/<int:id>', methods=["DELETE"])(remove_from_cart)
 
 def create_order():
   decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
-  user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
+  user = models.User.query.filter_by(id=decrypted_id['id']).first()
   order = models.Order(
     address = request.json["order"]["address"],
     credit_card = request.json["order"]["credit_card"]
@@ -199,7 +200,7 @@ app.route('/orders', methods=["POST"])(create_order)
 
 def all_orders():
     decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
-    user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
+    user = models.User.query.filter_by(id=decrypted_id['id']).first()
     orders = user.orders
     return {
         "user": user.to_json(),
@@ -209,7 +210,7 @@ app.route('/orders', methods=["GET"])(all_orders)
 
 def single_order(id):
     decrypted_id = jwt.decode(request.headers["Authorization"], os.environ.get('JWT_SECRET'), algorithms=["HS256"])
-    user = models.User.query.filter_by(id=decrypted_id['user_id']).first()
+    user = models.User.query.filter_by(id=decrypted_id['id']).first()
     order = models.Order.query.filter_by(id = id).first()
     products = order.products 
     return {
